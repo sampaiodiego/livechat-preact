@@ -15,6 +15,8 @@ export default class App extends Component {
 		super();
 
 		this.client = mqtt.connect('ws://test.mosquitto.org:8080');
+
+		this.myId = `id${ Date.now() }`;
 	}
 
 	/** Gets fired when the route changes.
@@ -25,16 +27,12 @@ export default class App extends Component {
 		this.currentUrl = e.url;
 	};
 
-	componentDidMount() {
-
-	}
-
 	render() {
 		return (
 			<div id="app">
 				<Header />
-				<Messages client={this.client} />
-				<Footer client={this.client} />
+				<Messages client={this.client} myId={this.myId} />
+				<Footer client={this.client} myId={this.myId} />
 			</div>
 		);
 	}
