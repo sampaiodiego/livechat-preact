@@ -3,7 +3,7 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import autoprefixer from 'autoprefixer';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import OfflinePlugin from 'offline-plugin';
+// import OfflinePlugin from 'offline-plugin';
 import path from 'path';
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 const ENV = process.env.NODE_ENV || 'development';
@@ -171,24 +171,24 @@ module.exports = {
 			{ from: './favicon.ico', to: './' }
 		])
 	]).concat(ENV==='production' ? [
-		new OfflinePlugin({
-			relativePaths: false,
-			AppCache: false,
-			excludes: ['_redirects'],
-			ServiceWorker: {
-				events: true,
-				// Until this is solved https://github.com/NekR/offline-plugin/issues/351
-				minify: false,
-			},
-			cacheMaps: [
-				{
-					match: /.*/,
-					to: '/',
-					requestTypes: ['navigate']
-				}
-			],
-			publicPath: '/'
-		})
+		// new OfflinePlugin({
+		// 	relativePaths: false,
+		// 	AppCache: false,
+		// 	excludes: ['_redirects'],
+		// 	ServiceWorker: {
+		// 		events: true,
+		// 		// Until this is solved https://github.com/NekR/offline-plugin/issues/351
+		// 		minify: false,
+		// 	},
+		// 	cacheMaps: [
+		// 		{
+		// 			match: /.*/,
+		// 			to: '/',
+		// 			requestTypes: ['navigate']
+		// 		}
+		// 	],
+		// 	publicPath: '/'
+		// })
 	] : []),
 
 	stats: { colors: true },
