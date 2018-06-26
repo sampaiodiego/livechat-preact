@@ -1,22 +1,74 @@
 import { h, Component } from 'preact';
+import axios from 'axios';
+
 import mqtt from '../lib/browserMqtt';
 
-// import { Router } from 'preact-router';
-
 import Header from './header';
-// import RegisterForm from './register-form';
-import Messages from './messages';
-import Footer from './footer';
-// import Home from './home';
-// import Profile from './profile';
+import RegisterForm from './register-form';
+import MessagesContainer from './messagesContainer';
+import RoomsList from './roomsList';
 
 export default class App extends Component {
 	constructor() {
 		super();
 
-		this.client = mqtt.connect('ws://test.mosquitto.org:8080');
+		const userId = this.userId = localStorage.getItem('rocketchat-userId');
+		const authToken = this.authToken = localStorage.getItem('rocketchat-authToken');
+		const jwt = this.jwt = localStorage.getItem('rocketchat-jwt');
+		const baseURL = this.server = localStorage.getItem('rocketchat-server');
 
-		this.myId = `id${ Date.now() }`;
+		this.state = {
+			loggedIn: !!authToken,
+			screen: authToken ? 'list' : 'login'
+		};
+
+		if (userId) {
+			this.setCredentials({
+				userId,
+				authToken,
+				jwt,
+				baseURL
+			});
+		}
+	}
+
+	setCredentials({ baseURL, userId, authToken, jwt }, store = false) {
+		if (store) {
+			localStorage.setItem('rocketchat-userId', userId);
+			localStorage.setItem('rocketchat-authToken', authToken);
+			localStorage.setItem('rocketchat-jwt', jwt);
+			localStorage.setItem('rocketchat-server', baseURL);
+			axios.defaults.baseURL = baseURL;
+		}
+
+		axios.defaults.headers.common['X-User-Id'] = userId;
+		axios.defaults.headers.common['X-Auth-Token'] = authToken;
+		axios.defaults.headers.common['Content-Type'] = 'application/json';
+		axios.defaults.baseURL = baseURL;
+
+		this.setState({
+			screen: 'list'
+		});
+	}
+
+	setRoom(roomId) {
+		this.client = mqtt.connect(`ws://${ this.server.replace(/^https?:\/\//, '').replace(/:[0-9]+$/g, '') }:8090`, {
+			username: this.jwt,
+			password: ''
+		});
+		this.setState({
+			screen: 'room',
+			roomId
+		});
+	}
+
+	sendMessage(msg) {
+		axios.post('/api/v1/chat.sendMessage', {
+			message: {
+				rid: this.state.roomId,
+				msg
+			}
+		});
 	}
 
 	/** Gets fired when the route changes.
@@ -28,11 +80,21 @@ export default class App extends Component {
 	};
 
 	render() {
+		let body;
+		switch (this.state.screen) {
+			case 'login':
+				body = (<RegisterForm axios={axios} setCredentials={this.setCredentials.bind(this)} />);
+				break;
+			case 'list':
+				body = (<RoomsList axios={axios} setRoom={this.setRoom.bind(this)} />);
+				break;
+			case 'room':
+				body = (<MessagesContainer client={this.client} roomId={this.state.roomId} userId={this.userId} sendMessage={this.sendMessage.bind(this)} />);
+		}
 		return (
 			<div id="app">
 				<Header />
-				<Messages client={this.client} myId={this.myId} />
-				<Footer client={this.client} myId={this.myId} />
+				{ body }
 			</div>
 		);
 	}

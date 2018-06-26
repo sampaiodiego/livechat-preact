@@ -14,10 +14,7 @@ export default class Footer extends Component {
 	}
 
 	sendMessage() {
-		this.props.client.publish('/dido', JSON.stringify({
-			body: this.state.value,
-			userId: this.props.myId
-		}));
+		this.props.sendMessage(this.state.value);
 		this.setState({ value: '' });
 	}
 

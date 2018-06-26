@@ -5,7 +5,7 @@ export default class Header extends Component {
 	render() {
 		return (
 			<div class={`${ style.messageItem }${ this.props.own ? ` ${style.own}` : '' }`}>
-				{this.props.body}
+				{this.props.msg}
 			</div>
 		);
 	}
